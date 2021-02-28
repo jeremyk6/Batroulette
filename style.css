@@ -1,0 +1,25 @@
+body {
+    margin : 0px;
+}
+
+button {
+    bottom : 0px;
+}
+
+#map { 
+    margin: 0px;
+    height: 100%;
+    width: 80%; 
+    right : 0px;
+    position: absolute;
+    transition: all .5s linear;
+}
+
+#content {
+    margin: 0px;
+    left : 0px;
+    height: 100%;
+    width: 20%; 
+    position: absolute;
+    text-align: center;
+}
