@@ -4,7 +4,26 @@
 
 var map;
 
-buildings_collection = L.geoJSON()
+/* Building register that will contain all downloaded buildings. The style is shamelessly ripped off from iD. */ 
+buildings_collection = L.geoJSON(null, {
+    style: {"color": "#e06e5f", "weight": 1, "fillOpacity": 0.3},
+    onEachFeature: function (feature, layer) {
+        layer.on('mouseover', function () {
+          this.setStyle({
+            "weight":5,
+          });
+        });
+        layer.on('mouseout', function () {
+          this.setStyle({
+            "weight":1,
+          });
+        });
+        layer.on('click', function () {
+          // Let's say you've got a property called url in your geojsonfeature:
+          window.location = feature.properties.url;
+        });
+    }
+})
 
 function setUI(state) {
     if(state == 1) {
@@ -28,6 +47,7 @@ function setUI(state) {
     document.getElementById("content").innerHTML = html;
 }
 
+/* Download and filter OSM datas on the current map bbox to keep only buildings. Already downloaded buildings are not kept */
 function downloadBat() {
     bounds = map.getBounds();
     url = "https://www.openstreetmap.org/api/0.6/map?bbox="+bounds.getWest()+","+bounds.getSouth()+","+bounds.getEast()+","+bounds.getNorth()
@@ -68,12 +88,14 @@ function init() {
         map.setView([47.123,4.658], 6);
     }
 
+    /* On every move/zoom end... */
     map.on('moveend zoomend', function() {
-        /* Update zoom and position in url */
+        /* ... update zoom and position in url */
         params = "map="+map.getZoom()+"/"+map.getCenter().lat+"/"+map.getCenter().lng
         url = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + params;
         window.history.pushState({path: url}, '', url);
 
+        /* ... download OSM datas if at a sufficient scale, else clear the buildings register */
         if(map.getZoom() >= 18) {
             downloadBat();
         }
