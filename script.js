@@ -19,8 +19,18 @@ buildings_collection = L.geoJSON(null, {
           });
         });
         layer.on('click', function () {
-          // Let's say you've got a property called url in your geojsonfeature:
-          window.location = feature.properties.url;
+            position = layer.getBounds().getCenter();
+            map.flyTo(position)
+            L.popup()
+            .setLatLng(layer.getBounds().getCenter())
+            .setContent(`
+            <div id="popup">
+                <p>Est-ce que ce bâtiment a changé ?</p>
+                <button onclick=batimentChanged()>Oui</button>
+                <button onclick=next()>Non</button>
+            </div>
+            `)
+            .openOn(map);
         });
     }
 })
