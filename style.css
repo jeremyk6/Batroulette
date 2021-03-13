@@ -51,6 +51,6 @@ button:hover {
     transition: all .5s linear;
 }
 
-#popup {
+.popup {
     text-align : center;
 }

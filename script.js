@@ -4,6 +4,8 @@
 
 var map;
 
+popups_list = []
+
 /* Building register that will contain all downloaded buildings. The style is shamelessly ripped off from iD. */ 
 buildings_collection = L.geoJSON(null, {
     style: {"color": "#e06e5f", "weight": 1, "fillOpacity": 0.3},
@@ -20,41 +22,47 @@ buildings_collection = L.geoJSON(null, {
         });
         layer.on('click', function () {
             position = layer.getBounds().getCenter();
+            popup = popups_list.find(popup => JSON.stringify(popup._latlng) == JSON.stringify(position))
+            if(!popup) {
+                id = "popup_"+Date.now()
+                popup = L.popup().setLatLng(layer.getBounds().getCenter())
+                popup.setContent(`
+                <div class="popup" id="`+id+`">
+                    <p>Est-ce que ce bâtiment a changé ?</p>
+                    <button onclick="popup_yes('`+id+`')">Oui</button>
+                    <button onclick="popup_remove('`+id+`')">Non</button>
+                </div>
+                `)
+                popup.id = id
+                popups_list.push(popup)
+            }    
+            popup.openOn(map);
             map.flyTo(position)
-            L.popup()
-            .setLatLng(layer.getBounds().getCenter())
-            .setContent(`
-            <div id="popup">
-                <p>Est-ce que ce bâtiment a changé ?</p>
-                <button onclick=batimentChanged()>Oui</button>
-                <button onclick=next()>Non</button>
-            </div>
-            `)
-            .openOn(map);
         });
     }
 })
 
-function setUI(state) {
-    if(state == 1) {
-        html = `
-        <p>Est-ce que ce bâtiment a changé ?</p>
-        <button onclick=batimentChanged()>Oui</button>
-        <button onclick=next()>Non</button>
-        `;
-    } else if(state == 2) {
-        html = `
+function popup_remove(id) {
+    popup = popups_list.find(popup => popup.id == id)
+    popup.remove()
+    index = popups_list.indexOf(popup)
+    popups_list.splice(index)
+}
+
+function popup_yes(id) {
+    popup = popups_list.find(popup => popup.id == id)
+    popup.setContent(`
+    <div class="popup" id="`+id+`">
         <p>Pouvez-vous nous en dire plus ?</p>
-        <textarea id="comment"></textarea>
-        <br/>
-        <button onclick=sendComment()>Envoyer</button>
-        `;
-    } else {
-        html = `
-        <p>Cliquez sur un bâtiment pour créer un commentaire.</p>
-        `;
-    }
-    document.getElementById("content").innerHTML = html;
+        <textarea></textarea><br/><br/>
+        <button onclick="send('`+id+`')">Envoyer</button>
+    </div>
+    `)
+}
+
+function send(id) {
+    console.log("TODO")
+    popup_remove(id)
 }
 
 /* Download and filter OSM datas on the current map bbox to keep only buildings. Already downloaded buildings are not kept */
@@ -113,6 +121,4 @@ function init() {
             buildings_collection.clearLayers()
         }
     });
-
-    setUI(0);
 }
