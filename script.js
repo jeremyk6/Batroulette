@@ -20,12 +20,12 @@ buildings_collection = L.geoJSON(null, {
             "weight":1,
           });
         });
-        layer.on('click', function () {
-            position = layer.getBounds().getCenter();
-            popup = popups_list.find(popup => JSON.stringify(popup._latlng) == JSON.stringify(position))
+        layer.on('click', function (e) {
+            position = e.latlng;
+            id = "popup_"+layer.feature.id
+            popup = popups_list.find(popup => popup.id == id)
             if(!popup) {
-                id = "popup_"+Date.now()
-                popup = L.popup({closeButton: false}).setLatLng(layer.getBounds().getCenter())
+                popup = L.popup({closeButton: false})
                 popup.setContent(`
                 <div class="popup" id="`+id+`">
                     <p>Est-ce que ce bâtiment a changé ?</p>
@@ -35,7 +35,8 @@ buildings_collection = L.geoJSON(null, {
                 `)
                 popup.id = id
                 popups_list.push(popup)
-            }    
+            }
+            popup.setLatLng(position)
             popup.openOn(map);
             map.flyTo(position)
         });
