@@ -25,7 +25,7 @@ buildings_collection = L.geoJSON(null, {
             popup = popups_list.find(popup => JSON.stringify(popup._latlng) == JSON.stringify(position))
             if(!popup) {
                 id = "popup_"+Date.now()
-                popup = L.popup().setLatLng(layer.getBounds().getCenter())
+                popup = L.popup({closeButton: false}).setLatLng(layer.getBounds().getCenter())
                 popup.setContent(`
                 <div class="popup" id="`+id+`">
                     <p>Est-ce que ce bâtiment a changé ?</p>
@@ -54,15 +54,31 @@ function popup_yes(id) {
     popup.setContent(`
     <div class="popup" id="`+id+`">
         <p>Pouvez-vous nous en dire plus ?</p>
-        <textarea></textarea><br/><br/>
+        <textarea id="`+"text"+id+`"></textarea><br/><br/>
         <button onclick="send('`+id+`')">Envoyer</button>
     </div>
     `)
 }
 
 function send(id) {
-    console.log("TODO")
-    popup_remove(id)
+    popup = popups_list.find(popup => popup.id == id)
+    lat = popup._latlng.lat
+    lon = popup._latlng.lng
+    text = document.getElementById("text"+id).value
+    createNote(lat, lon, text).then(response => {
+        if(response == 0) {
+            img = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Light_green_check.svg/1024px-Light_green_check.svg.png"
+        }
+        else {
+            img = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/1024px-Red_x.svg.png"
+        }
+        popup.setContent(`
+        <div class="popup" id="`+id+`">
+            <img src="`+img+`" width="50" height="50"></img>
+        </div>
+        `)
+        setTimeout(popup_remove, 1500, id);
+    })
 }
 
 /* Download and filter OSM datas on the current map bbox to keep only buildings. Already downloaded buildings are not kept */
